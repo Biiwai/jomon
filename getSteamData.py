@@ -4,6 +4,7 @@ from builtins import *
 import json
 import sqlite3
 import time
+import argparse
 
 import EtDatabase
 import steam
@@ -111,20 +112,31 @@ def readFromDatabase(schema, dbFile, table):
 
 
 def main():
+    parser = argparse.ArgumentParser(description='', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.app_help = True
+    # Arguments - Read - json, db, web (def)
+    # Arguments - Write - json, db, none
+    parser.add_argument("-r", "--read", nargs="?", choices=("json","db","web"), default="web")
+    parser.add_argument("-w", "--write", nargs="?", choices=("json","db"), default="json")
+    parser.add_argument("-s", "--source", nargs="?", choices=("json","db"), default="json")
+
+    steamDbFile = "SteamInfo.sqlite"
 #    curators = steam.getCurators()
 #    writeJsonFile(curators, 'curators.txt')
-#    writeToDatabase(curators, SteamDb.curatorsSchema, "SteamInfo.sqlite", "curators")
+#    writeToDatabase(curators, SteamDb.curatorsSchema, SteamDbFile, "curators")
 
-    curators = readFromDatabase(SteamDb.curatorsSchema, "SteamInfo.db", "curators")
+    curators = readFromDatabase(SteamDb.curatorsSchema, steamDbFile, "curators")
 
     recommendations = steam.getRecommendationsSet(curators)
-    writeToDatabase(reformatRecommendations(recommendations), SteamDb.recommendationsSchema, "SteamInfo.sqlite", "recommendations")
     writeJsonFile(recommendations, 'recommendations.txt')
+    reformattedRecs = reformatRecommendations(recommendations)
+    writeToDatabase(reformattedRecs, SteamDb.recommendationsSchema, SteamDbFile, "recommendations")
 
     appIdList = getAppIdsFromRecommendations(recommendations)
-    gameData = steam.getAppDetailsSet(appIdList)
-    writeToDatabase(reformatAppDetails(gameData), SteamDb.appsSchema, "SteamInfo.sqlite", "apps")
-    writeJsonFile(gameData, 'games.txt')
+    appData = steam.getAppDetailsSet(appIdList)
+    writeJsonFile(appData, 'games.txt')
+    reformattedApps = reformatAppDetails(appData)
+    writeToDatabase(reformattedApps, SteamDb.appsSchema, SteamDbFile, "apps")
 
 #    with open('curators.txt') as inputFile:
 #        curators = json.load(inputFile)
