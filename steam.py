@@ -32,12 +32,16 @@ APP_DETAILS_PATH = "/api/appdetails/"
 
 MAX_PER_PAGE = 50
 RETRY_ATTEMPTS = 10
-PAUSE_TIME_IN_SEC = 90
+PAUSE_TIME_IN_SEC = 60
 
 
 def getAppsList():
     path = API_ROOT + APP_LIST_PATH
-    response = requests.get(path).json()
+
+    try:
+        response = requests.get(path).json()
+    except ValueError as e:
+        response = None
 
     if response and "applist" in response and "apps" in response["applist"]:
         return data["applist"]["apps"]
@@ -54,7 +58,7 @@ def getAppDetailsSet(appIds):
             games[appId] = getAppDetails(appId)
 
             while not games[appId]:
-                print("EMPTY RESPONSE. Waiting...")
+                print("EMPTY RESPONSE for " + str(appId) + ". Waiting...")
                 print("[" + str(gameIndex + 1) + "/" + str(len(appIds)) + "]", format(appId, "06d"), "- ", end="")
                 time.sleep(PAUSE_TIME_IN_SEC)
                 games[appId] = getAppDetails(appId)
@@ -66,14 +70,17 @@ def getAppDetailsSet(appIds):
     return games
 
 
-def getAppDetails(appid):
+def getAppDetails(appId):
     path = STORE_API_ROOT + APP_DETAILS_PATH
-    response = requests.get(path, params={ "appids": str(appid) }).json()
+    try:
+        response = requests.get(path, params={ "appids": str(appId) }).json()
+    except ValueError as e:
+        response = None
 
-    if not response or not str(appid) in response:
+    if not response or not str(appId) in response:
         return None
     else:
-        response = response[str(appid)]
+        response = response[str(appId)]
 
     if 'success' in response and response['success'] and 'data' in response:
         return data['data']
@@ -102,18 +109,18 @@ def getRecommendations(curatorId, curatorLabel=None):
         print(curatorLabel, "- From #" + str(recIndex), "- ", end="")
         newRecs, totalCount = _getRecommendations(curatorId, recIndex, MAX_PER_PAGE)
 
-        while not newRecs:
+        while newRecs == None:
             if retryAttempts > RETRY_ATTEMPTS:
                 print("EMPTY RESPONSE. Exceeded retry attempts; giving up.")
                 return None
 
-            print("EMPTY RESPONSE. Waiting...")
+            print("EMPTY RESPONSE for " + str(curatorId) + ". Waiting...")
             print(curatorLabel, "- From #" + str(recIndex), "- ", end="")
             time.sleep(PAUSE_TIME_IN_SEC)
             newRecs, totalCount = _getRecommendations(curatorId, recIndex, MAX_PER_PAGE)
             retryAttempts += 1
 
-        print("Grabbed",len(newRecs),"recommendations.")
+        print("Grabbed", len(newRecs), "recommendations.")
         recommendations.extend(newRecs)
         recIndex += len(newRecs)
 
@@ -122,7 +129,10 @@ def getRecommendations(curatorId, curatorLabel=None):
 
 def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
     path = STORE_API_ROOT + CURATORS_RECOMMENDATIONS_PATH % {"id": curatorId}
-    response = requests.get(path, params={ "start": start, "count": count }).json()
+    try:
+        response = requests.get(path, params={ "start": start, "count": count }).json()
+    except ValueError as e:
+        response = None
 
     if not response or not "results_html" in response:
         return None, None
@@ -151,7 +161,7 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
             else:
                 date = div.text.strip().lstrip("Recommended: ")
         recommendations.append({
-            "appid": int(rec["data-ds-appid"]),
+            "appId": int(rec["data-ds-appid"]),
             "price": rec.select(".recommendation_app_price")[0].text.strip(),
             "desc": rec.select(".recommendation_desc")[0].text.strip(),
             "readmore": readmore and readmore[0].a["href"],
@@ -181,7 +191,7 @@ def getCurators():
             newData, totalCount = _getCurators(curatorIndex, MAX_PER_PAGE)
             retryAttempts += 1
 
-        print("[" + str(curatorIndex) + "/" + str(totalCount) + "] - Grabbed ",len(newData),"curator profiles.")
+        print("[" + str(curatorIndex) + "/" + str(totalCount) + "] - Grabbed",len(newData),"curator profiles.")
         curators.update(newData)
         curatorIndex += len(newData)
 
@@ -196,7 +206,14 @@ def _getCurators(start=0, count=MAX_PER_PAGE):
     }
     path = STORE_API_ROOT + CURATORS_PATH
     r = requests.get(path, params=params)
-    data = r.json()
+    try:
+        data = r.json()
+    except ValueError as e:
+        r = None
+
+    if r == None:
+        return None
+
     soup = bs4.BeautifulSoup(data["results_html"], "html.parser")
     curators = soup.select(".steam_curator_row_ctn")
     for curator in curators:
@@ -207,10 +224,10 @@ def _getCurators(start=0, count=MAX_PER_PAGE):
             # bad data
             continue
         ret[curatorId] = {
-            "href": href,
+            "page_url": href,
             "num_followers": int(curator.select(".num_followers")[0].text.replace(",", "")),
             "name": curator.select(".steam_curator_name")[0].text,
             "desc": desc and desc[0].text.strip(),
-            "avatar": curator.select("img.steam_curator_avatar")[0]["src"],
+            "avatar_url": curator.select("img.steam_curator_avatar")[0]["src"],
         }
     return ret, data["total_count"]
