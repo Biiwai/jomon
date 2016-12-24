@@ -5,7 +5,7 @@ import argparse
 import random
 import sqlite3
 
-import Steam
+import SteamApi
 import SteamDb
 import DbHelper
 
@@ -35,7 +35,7 @@ def updateCurators(db, downloadRequested):
 
     if downloadRequested:
         # Get recent curator info from Steam if requested and update the databases.
-        curators = Steam.getCurators()
+        curators = SteamApi.getCurators()
         newKeys = DbHelper.identifyNewEntries(db, CURATORS, UPDATE_RECOMMENDATIONS, CURATOR_KEY, curators.keys())
         maxFetch -= len(newKeys)
 
@@ -57,7 +57,7 @@ def updateCurators(db, downloadRequested):
 
 
 def updateRecommendations(db, curators):
-    rawRecData = Steam.getRecommendationsSet(curators)
+    rawRecData = SteamApi.getRecommendationsSet(curators)
     recommendations = dict()
 
     # Format updates so that they can be easily processed and stored.
@@ -88,7 +88,7 @@ def updateAppDetails(db, recommendations):
     # Identify update entries from preexisting apps.
     updateKeys = DbHelper.identifyUpdates(db, APPS, UPDATE_APPS, APP_KEY, maxFetch)
 
-    rawAppData = Steam.getAppDetailsSet(list(newKeys) + list(updateKeys))
+    rawAppData = SteamApi.getAppDetailsSet(list(newKeys) + list(updateKeys))
     apps = dict()
 
     for appId, appDetails in rawAppData.iteritems():
