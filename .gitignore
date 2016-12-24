@@ -1,1 +1,8 @@
 *.pyc
+SteamInfo.sqlite
+cache.sqlite
+cache.sqlite-journal
+cache2.sqlite
+apps.txt
+curators.txt
+recommendations.txt

@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
-curatorsSchema = OrderedDict([
-    ("curatorId", "integer primary key"),	# First column is *always* primary key
+curatorSchema = OrderedDict([
+    ("curator_id", "integer primary key"),	# First column is *always* primary key
     ("name", "text"),
     ("desc", "text"),
     ("avatar_url", "text"),
@@ -9,10 +9,10 @@ curatorsSchema = OrderedDict([
     ("num_followers", "integer")
 ])
 
-recommendationsSchema = OrderedDict([
-    ("reviewId", "integer primary key"),
-    ("curatorId", "integer"),
-    ("appId", "integer"),
+recommendationSchema = OrderedDict([
+    ("review_id", "integer primary key"),
+    ("curator_id", "integer"),
+    ("app_id", "integer"),
     ("desc", "text"),
 #    ("comments", "integer"), # Unused?
 #    ("likes", "integer"), # Unused?
@@ -20,19 +20,19 @@ recommendationsSchema = OrderedDict([
     ("readmore", "text"),
 ])
 
-appsSchema = OrderedDict([
-    ("appId", "integer primary key"),
+appSchema = OrderedDict([
+    ("app_id", "integer primary key"),
     ("name", "text"),
     ("about_the_game", "text"),
     ("detailed_description", "text"),
     ("background", "text"),
     ("header_image", "text"),
-    ("isfree", "boolean"),
+    ("is_free", "boolean"),
     ("metacritic_score", "integer"),
     ("metacritic_url", "text"),
     ("publishers", "text"),
-    ("recommendations", "integer"),
-    ("coming soon", "boolean"),
+    ("num_recommendations", "integer"),
+    ("coming_soon", "boolean"),
     ("release_date", "text"),
     ("required_age", "integer"),
     ("support_url", "text"),
@@ -46,5 +46,5 @@ appsSchema = OrderedDict([
 #platforms
 #price_overview
 #screenshots
-
 ])
+

@@ -27,7 +27,6 @@ def getColumns(theDb, tableName, columnNames, condition = None, conditionValues=
 def toQueryList(listItems):
     queryList = ""
 
-    print listItems    
     for listItem in listItems:
         queryList += listItem + ", "
         

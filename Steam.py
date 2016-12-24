@@ -35,6 +35,70 @@ RETRY_ATTEMPTS = 10
 PAUSE_TIME_IN_SEC = 60
 
 
+def getCurators():
+    curatorIndex = 0
+    totalCount = None
+    curators = dict()
+
+    while totalCount == None or curatorIndex < totalCount:
+        retryAttempts = 0
+        newData, totalCount = _getCurators(curatorIndex, MAX_PER_PAGE)
+        while not newData:
+            if retryAttempts > RETRY_ATTEMPTS:
+                print("EMPTY RESPONSE. Exceeded retry attempts; giving up.")
+                return None
+
+            print("EMPTY RESPONSE. Waiting...")
+            time.sleep(PAUSE_TIME_IN_SEC)
+            newData, totalCount = _getCurators(curatorIndex, MAX_PER_PAGE)
+            retryAttempts += 1
+
+        print("[" + str(curatorIndex) + "/" + str(totalCount) + "] - Grabbed",len(newData),"curator profiles.")
+        curators.update(newData)
+        curatorIndex += len(newData)
+
+    return curators
+
+
+def getRecommendationsSet(curators):
+    recommendations = dict()
+
+    for curatorIndex, curator in enumerate(curators.iterkeys()):
+        curatorInfo = str(curatorIndex + 1) + "/" + str(len(curators)) + "] " + curators[curator]["name"]
+        recommendations[curator] = getRecommendations(int(curator), curatorInfo)
+
+    return recommendations
+
+
+def getRecommendations(curatorId, curatorLabel=None):
+    curatorLabel = "[" + str(curatorLabel) if curatorLabel else str(curatorId) + "]"
+    recIndex = 0
+    totalCount = None
+    recommendations = []
+
+    while totalCount == None or recIndex < totalCount:
+        retryAttempts = 0
+        print(curatorLabel, "- From #" + str(recIndex), "- ", end="")
+        newRecs, totalCount = _getRecommendations(curatorId, recIndex, MAX_PER_PAGE)
+
+        while newRecs == None:
+            if retryAttempts > RETRY_ATTEMPTS:
+                print("EMPTY RESPONSE. Exceeded retry attempts; giving up.")
+                return None
+
+            print("EMPTY RESPONSE for " + str(curatorId) + ". Waiting...")
+            print(curatorLabel, "- From #" + str(recIndex), "- ", end="")
+            time.sleep(PAUSE_TIME_IN_SEC)
+            newRecs, totalCount = _getRecommendations(curatorId, recIndex, MAX_PER_PAGE)
+            retryAttempts += 1
+
+        print("Grabbed", len(newRecs), "recommendations.")
+        recommendations.extend(newRecs)
+        recIndex += len(newRecs)
+
+    return recommendations
+
+
 def getAppsList():
     path = API_ROOT + APP_LIST_PATH
 
@@ -83,48 +147,43 @@ def getAppDetails(appId):
         response = response[str(appId)]
 
     if 'success' in response and response['success'] and 'data' in response:
-        return data['data']
+        return response['data']
     else:
         return dict()
 
 
-def getRecommendationsSet(curators):
-    recommendations = dict()
+def _getCurators(start=0, count=MAX_PER_PAGE):
+    ret = {}
+    params = {
+        "start": start,
+        "count": count,
+    }
+    path = STORE_API_ROOT + CURATORS_PATH
+    try:
+        data = requests.get(path, params=params).json()
+    except ValueError as e:
+        return None
 
-    for curatorIndex, curator in enumerate(curators.iterkeys()):
-        curatorInfo = str(curatorIndex + 1) + "/" + str(len(curators)) + "] " + curators[curator]["name"]
-        recommendations[curator] = getRecommendations(int(curator), curatorInfo)
+    if data == None:
+        return None
 
-    return recommendations
-
-
-def getRecommendations(curatorId, curatorLabel=None):
-    curatorLabel = "[" + str(curatorLabel) if curatorLabel else str(curatorId) + "]"
-    recIndex = 0
-    totalCount = None
-    recommendations = []
-
-    while totalCount == None or recIndex < totalCount:
-        retryAttempts = 0
-        print(curatorLabel, "- From #" + str(recIndex), "- ", end="")
-        newRecs, totalCount = _getRecommendations(curatorId, recIndex, MAX_PER_PAGE)
-
-        while newRecs == None:
-            if retryAttempts > RETRY_ATTEMPTS:
-                print("EMPTY RESPONSE. Exceeded retry attempts; giving up.")
-                return None
-
-            print("EMPTY RESPONSE for " + str(curatorId) + ". Waiting...")
-            print(curatorLabel, "- From #" + str(recIndex), "- ", end="")
-            time.sleep(PAUSE_TIME_IN_SEC)
-            newRecs, totalCount = _getRecommendations(curatorId, recIndex, MAX_PER_PAGE)
-            retryAttempts += 1
-
-        print("Grabbed", len(newRecs), "recommendations.")
-        recommendations.extend(newRecs)
-        recIndex += len(newRecs)
-
-    return recommendations
+    soup = bs4.BeautifulSoup(data["results_html"], "html.parser")
+    curators = soup.select(".steam_curator_row_ctn")
+    for curator in curators:
+        curatorId = int(curator.a["data-clanid"])
+        href = curator.a["href"].strip()
+        desc = curator.select(".steam_curator_desc")
+        if not href:
+            # bad data
+            continue
+        ret[curatorId] = {
+            "page_url": href,
+            "num_followers": int(curator.select(".num_followers")[0].text.replace(",", "")),
+            "name": curator.select(".steam_curator_name")[0].text,
+            "desc": desc and desc[0].text.strip(),
+            "avatar_url": curator.select("img.steam_curator_avatar")[0]["src"],
+        }
+    return ret, data["total_count"]
 
 
 def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
@@ -160,74 +219,18 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
                     comments = int(div.text.strip())
             else:
                 date = div.text.strip().lstrip("Recommended: ")
-        recommendations.append({
-            "appId": int(rec["data-ds-appid"]),
-            "price": rec.select(".recommendation_app_price")[0].text.strip(),
-            "desc": rec.select(".recommendation_desc")[0].text.strip(),
-            "readmore": readmore and readmore[0].a["href"],
-            "comments": comments,
-            "likes": likes,
-            "date": date,
-        })
+        try:    
+            recommendations.append({
+                "app_id": int(rec["data-ds-appid"]),
+                "price": rec.select(".recommendation_app_price")[0].text.strip(),
+                "desc": rec.select(".recommendation_desc")[0].text.strip(),
+                "readmore": readmore and readmore[0].a["href"],
+                "comments": comments,
+                "likes": likes,
+                "date": date,
+            })
+        except ValueError:
+            print("Couldn't process entry:", rec)
 
     return recommendations, totalCount
 
-
-def getCurators():
-    curatorIndex = 0
-    totalCount = None
-    curators = dict()
-
-    while totalCount == None or curatorIndex < totalCount:
-        retryAttempts = 0
-        newData, totalCount = _getCurators(curatorIndex, MAX_PER_PAGE)
-        while not newData:
-            if retryAttempts > RETRY_ATTEMPTS:
-                print("EMPTY RESPONSE. Exceeded retry attempts; giving up.")
-                return None
-
-            print("EMPTY RESPONSE. Waiting...")
-            time.sleep(PAUSE_TIME_IN_SEC)
-            newData, totalCount = _getCurators(curatorIndex, MAX_PER_PAGE)
-            retryAttempts += 1
-
-        print("[" + str(curatorIndex) + "/" + str(totalCount) + "] - Grabbed",len(newData),"curator profiles.")
-        curators.update(newData)
-        curatorIndex += len(newData)
-
-    return curators
-
-
-def _getCurators(start=0, count=MAX_PER_PAGE):
-    ret = {}
-    params = {
-        "start": start,
-        "count": count,
-    }
-    path = STORE_API_ROOT + CURATORS_PATH
-    r = requests.get(path, params=params)
-    try:
-        data = r.json()
-    except ValueError as e:
-        r = None
-
-    if r == None:
-        return None
-
-    soup = bs4.BeautifulSoup(data["results_html"], "html.parser")
-    curators = soup.select(".steam_curator_row_ctn")
-    for curator in curators:
-        curatorId = int(curator.a["data-clanid"])
-        href = curator.a["href"].strip()
-        desc = curator.select(".steam_curator_desc")
-        if not href:
-            # bad data
-            continue
-        ret[curatorId] = {
-            "page_url": href,
-            "num_followers": int(curator.select(".num_followers")[0].text.replace(",", "")),
-            "name": curator.select(".steam_curator_name")[0].text,
-            "desc": desc and desc[0].text.strip(),
-            "avatar_url": curator.select("img.steam_curator_avatar")[0]["src"],
-        }
-    return ret, data["total_count"]
