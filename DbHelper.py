@@ -6,7 +6,6 @@ import sys
 import time
 import random
 import sqlite3
-import EtDatabase
 
 DAYS_AGE_STALE_ENTRIES = 7
 UPDATE_MAX = sys.maxsize
@@ -63,13 +62,23 @@ def getRecordCount(db, table):
     return(cursor.fetchall()[0][0])
 
 
+# Get a specific set of columns
+def getColumns(theDb, tableName, columns, condition = None, isDistinct=False, suffix=""):
+    query = "select " + ("distinct " if isDistinct else '') + ", ".join(columns) + " from " + tableName
+    query += (" where " + condition if condition else '') + suffix
+
+    cursor = theDb.cursor()
+    cursor.execute(query, conditionValues)
+    return cursor.fetchall()
+
+
 # Write a set of dictionary values to a table (strips out timestamp)
 def readDatabase(schema, db, table):
     keyName = schema.keys()[0]
     valueNames = schema.keys()[1:]
 
     dataSet = dict()
-    rows = EtDatabase.getColumns(db, table, schema.keys())
+    rows = getColumns(db, table, schema.keys())
 
     for row in rows:
         row = list(row)
@@ -142,7 +151,7 @@ def identifyNewEntries(db, table, updateTable, key, newKeys):
 def identifyUpdates(db, sourceTable, updateTable, primaryKey, maxFetch = UPDATE_MAX):
     staleKeys = []
     recentKeys = []
-    currentInfo = dict(EtDatabase.getColumns(db, sourceTable, [primaryKey, TIMESTAMP]))
+    currentInfo = dict(getColumns(db, sourceTable, [primaryKey, TIMESTAMP]))
 
     # Separate stale entries from recent ones.
     for key, timestamp in currentInfo.iteritems():
