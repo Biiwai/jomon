@@ -63,12 +63,12 @@ def getRecordCount(db, table):
 
 
 # Get a specific set of columns
-def getColumns(theDb, tableName, columns, condition = None, isDistinct=False, suffix=""):
+def getColumns(theDb, tableName, columns, condition = None, values=(), isDistinct=False, suffix=""):
     query = "select " + ("distinct " if isDistinct else '') + ", ".join(columns) + " from " + tableName
     query += (" where " + condition if condition else '') + suffix
 
     cursor = theDb.cursor()
-    cursor.execute(query, conditionValues)
+    cursor.execute(query, values)
     return cursor.fetchall()
 
 
