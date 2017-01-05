@@ -30,6 +30,9 @@ CURATORS_RECOMMENDATIONS_PATH = "/curators/ajaxgetcuratorrecommendations/%(id)i/
 APP_LIST_PATH = "/ISteamApps/GetAppList/v2"
 APP_DETAILS_PATH = "/api/appdetails/"
 
+APP_ID = "app_id"
+CURATOR_ID = "curator_id"
+
 MAX_PER_PAGE = 50
 RETRY_ATTEMPTS = 10
 PAUSE_TIME_IN_SEC = 60
@@ -57,15 +60,17 @@ def getCurators():
         curators.update(newData)
         curatorIndex += len(newData)
 
+    curators = [{data.items() + (CURATOR_ID, key)} for key, data in curators.iteritems()]
     return curators
 
 
 def getRecommendationsSet(curators):
-    recommendations = dict()
+    recommendations = []
 
-    for curatorIndex, curator in enumerate(curators.iterkeys()):
-        curatorInfo = str(curatorIndex + 1) + "/" + str(len(curators)) + "] " + curators[curator]["name"]
-        recommendations[curator] = getRecommendations(int(curator), curatorInfo)
+    for curatorIndex, curator in enumerate(curators):
+        curatorId = curator[CURATOR_ID]
+        curatorInfo = str(curatorIndex + 1) + "/" + str(len(curators)) + "] " + curator["name"]
+        recommendations.extend(getRecommendations(int(curatorId), curatorInfo))
 
     return recommendations
 
@@ -114,23 +119,26 @@ def getAppsList():
 
 
 def getAppDetailsSet(appIds):
-    games = dict()
+    appIds = set(appIds)
+    games = []
 
     for gameIndex, appId in enumerate(appIds):
-        if not appId in games:
+        print("[" + str(gameIndex + 1) + "/" + str(len(appIds)) + "]", format(appId, "06d"), "- ", end="")
+        newEntry = getAppDetails(appId)
+
+        while not newEntry:
+            print("EMPTY RESPONSE for " + str(appId) + ". Waiting...")
             print("[" + str(gameIndex + 1) + "/" + str(len(appIds)) + "]", format(appId, "06d"), "- ", end="")
-            games[appId] = getAppDetails(appId)
+            time.sleep(PAUSE_TIME_IN_SEC)
+            newEntry = getAppDetails(appId)
 
-            while not games[appId]:
-                print("EMPTY RESPONSE for " + str(appId) + ". Waiting...")
-                print("[" + str(gameIndex + 1) + "/" + str(len(appIds)) + "]", format(appId, "06d"), "- ", end="")
-                time.sleep(PAUSE_TIME_IN_SEC)
-                games[appId] = getAppDetails(appId)
+        if 'name' in newEntry.keys():
+            print(newEntry['name'])
+        else:
+            print("EMPTY DATA SET.")
 
-            if 'name' in games[appId].keys():
-                print(games[appId]['name'])
-            else:
-                print("EMPTY DATA SET.")
+        games.append(newEntry)
+
     return games
 
 
@@ -147,9 +155,10 @@ def getAppDetails(appId):
         response = response[str(appId)]
 
     if 'success' in response and response['success'] and 'data' in response:
+        response['data'][APP_ID] = appId
         return response['data']
     else:
-        return dict()
+        return {APP_ID : appId}
 
 
 def _getCurators(start=0, count=MAX_PER_PAGE):
@@ -177,11 +186,11 @@ def _getCurators(start=0, count=MAX_PER_PAGE):
             # bad data
             continue
         ret[curatorId] = {
-            "page_url": href,
-            "num_followers": int(curator.select(".num_followers")[0].text.replace(",", "")),
+            "page": href,
+            "followers": int(curator.select(".num_followers")[0].text.replace(",", "")),
             "name": curator.select(".steam_curator_name")[0].text,
             "desc": desc and desc[0].text.strip(),
-            "avatar_url": curator.select("img.steam_curator_avatar")[0]["src"],
+            "avatar": curator.select("img.steam_curator_avatar")[0]["src"],
         }
     return ret, data["total_count"]
 
@@ -221,10 +230,11 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
                 date = div.text.strip().lstrip("Recommended: ")
         try:    
             recommendations.append({
-                "app_id": int(rec["data-ds-appid"]),
+                CURATOR_ID : curatorId,
+                APP_ID : int(rec["data-ds-appid"]),
                 "price": rec.select(".recommendation_app_price")[0].text.strip(),
                 "desc": rec.select(".recommendation_desc")[0].text.strip(),
-                "readmore": readmore and readmore[0].a["href"],
+                "review_page": readmore and readmore[0].a["href"],
                 "comments": comments,
                 "likes": likes,
                 "date": date,

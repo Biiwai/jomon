@@ -6,3 +6,5 @@ cache2.sqlite
 apps.txt
 curators.txt
 recommendations.txt
+backup.db
+old/
