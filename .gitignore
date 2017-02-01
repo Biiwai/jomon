@@ -9,4 +9,4 @@ recommendations.txt
 backup.db
 old/
 .vscode
-
+db.sqlite3
