@@ -1,0 +1,43 @@
+{
+  "name": "jomon",
+  "version": "1.0.0",
+  "description": "Rapid prototype for Yamato framework",
+  "main": "index.js",
+  "dependencies": {
+    "babel-core": "^6.23.1",
+    "babel-loader": "^6.3.2",
+    "babel-preset-es2015": "^6.22.0",
+    "babel-preset-react": "^6.23.0",
+    "jquery": "^3.1.1",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "redux": "^3.6.0",
+    "webpack": "^2.2.1",
+    "webpack-bundle-tracker": "^0.2.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.23.1",
+    "babel-loader": "^6.3.2",
+    "babel-preset-es2015": "^6.22.0",
+    "babel-preset-react": "^6.23.0",
+    "jquery": "^3.1.1",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "redux": "^3.6.0",
+    "webpack": "^2.2.1",
+    "webpack-bundle-tracker": "^0.2.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Biiwai/jomon.git"
+  },
+  "author": "Jeremiah Blanchard",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Biiwai/jomon/issues"
+  },
+  "homepage": "https://github.com/Biiwai/jomon#readme"
+}
