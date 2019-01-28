@@ -27,7 +27,8 @@ class SuperModel(models.Model):
     @classmethod
     def getUpdateClass(Target):
         if not hasattr(Target, '_updateClass'):
-            attrs = {  UPDATE_ID : models.OneToOneField(Target, primary_key=True),
+            attrs = {  
+					   UPDATE_ID : models.OneToOneField(Target, primary_key=True, on_delete=models.CASCADE),
                        TIMESTAMP : models.DateTimeField(auto_now=True),
                       '__module__' : Target.__module__
                     }
