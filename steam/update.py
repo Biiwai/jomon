@@ -31,7 +31,7 @@ def exportData(curatorFile = "curators.txt", recFile = "recommendations.txt", ap
 
     _writeJsonFile([entry.getDict() for entry in curators], curatorFile)
     _writeJsonFile([entry.getDict() for entry in recommendations], recFile)
-    _writeJsonFile([entry.getDict() for entry in recommendations], 'appFile)
+    _writeJsonFile([entry.getDict() for entry in recommendations], appFile)	#(ky-edit removed ')
 
     return curators, recommendations, applications
 
