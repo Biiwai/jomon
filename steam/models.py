@@ -1,7 +1,6 @@
 from django.db import models
 from jomon.shared import *
 
-
 class Curator(SuperModel):
     curator_id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=CHAR_MAX_LENGTH)

@@ -113,7 +113,7 @@ def getAppsList():
         response = None
 
     if response and "applist" in response and "apps" in response["applist"]:
-        return data["applist"]["apps"]
+        return response["applist"]["apps"] #edited 'data' to response
     else:
         return None
 
