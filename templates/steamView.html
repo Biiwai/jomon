@@ -1,9 +1,34 @@
 <!DOCTYPE html>
-<html>
-	<h1> Steam Recommendation Interface </h1>
-	<ul>
-		{% for app in myApplications %}
-			<li class="app">{{ app }}</li>
-		{% endfor %}
-	</ul>
+
+<html lang = "en">
+	<head>
+		<title>Steam Jomon Project</title>
+		<link rel="shortcut icon" href="https://steamcommunity.com/favicon.ico" type="image/x-icon">
+		<link href="https://steamstore-a.akamaihd.net/public/shared/css/motiva_sans.css?v=FAK4O46_mOLB" rel="stylesheet" type="text/css">
+		<link href="https://steamstore-a.akamaihd.net/public/shared/css/shared_global.css?v=5OoDLCYZma2O" rel="stylesheet" type="text/css">
+		<link href="https://steamstore-a.akamaihd.net/public/shared/css/buttons.css?v=g4vF5QlH7C0a" rel="stylesheet" type="text/css">
+		<link href="https://steamstore-a.akamaihd.net/public/css/v6/store.css?v=UZir9ByIFeA6" rel="stylesheet" type="text/css">
+		<link href="https://steamstore-a.akamaihd.net/public/css/v6/curators_common.css?v=xdMzRLyF8Fl8" rel="stylesheet" type="text/css">
+		<link href="https://steamstore-a.akamaihd.net/public/css/v6/curators_home.css?v=dcy7gEll6Yft" rel="stylesheet" type="text/css">
+		<link href="https://steamstore-a.akamaihd.net/public/shared/css/shared_responsive.css?v=lZjXzgjiAjP-" rel="stylesheet" type="text/css">
+	</head>
+	<body class="v6 responsive_page">
+		<div>
+			<div>
+				<h2><!–– Suggested Games List (Primary component)--><!---->
+					STEAM CURATOR <b>GAMES</b>
+				</h2>
+			</div>
+			<div>
+				<h2><!–– Suggested Curator List (Secondary component)--><!---->
+					STEAM <b>CURATORS</b>
+				</h2>
+			</div>
+		</div>
+		<ul>
+			{% for app_id in Application %}
+				<li class="app">{{ app_id }}</li>
+			{% endfor %}
+		</ul>
+	</body>
 </html>

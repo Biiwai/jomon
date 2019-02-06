@@ -6,14 +6,15 @@ from django.http import HttpResponse
 from . import update
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the Steam index.")
+	return HttpResponse("Hello, world. You're at the Steam index.")
 
-def steamView(request):
+def curator(request):
 	# TESTING METHODS ONLY
-	
-	#myCurators = update.steam_api.getCurators()
-	#myRecommendations = update.steam_api.getRecommendationsSet(myCurators)
-	#myApplications = update.steam_api.getAppsList()
+
+	#myCurats = update.steam_api.getCurators()
+	#myRecs = update.steam_api.getRecommendationsSet(myCurats)
+	#myApps = update.steam_api.getAppsList()
+	#myAppDetails[appid] = update.steam_api.getAppDetails(appid)
 	
 	###### JSON format ######
 
@@ -22,11 +23,16 @@ def steamView(request):
 
 	#myCurats, myRecs, myApps = update.pull()	# Use when pull() works
 
-	myApplications = update.steam_api.getAppsList()	# testing only
 	
-	template_name = 'steamView.html'
-	template = loader.get_template(template_name)
-	context = {
-		'myApplications': myApplications,
-	}
+
+	if request.method == 'GET':
+		myApps = update.steam_api.getAppsList()	# testing only
+
+		template_name = 'steamView.html'
+		template = loader.get_template(template_name)
+		context = {
+			'myApps': myApps,
+			#'myRecs': myRecs,
+			#'myCurats': myCurats,
+		}
 	return HttpResponse(template.render(context,request))
