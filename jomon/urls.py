@@ -17,6 +17,7 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.auth.models import User
 from rest_framework import routers, serializers, viewsets
+from django.views.generic.base import TemplateView
 
 # Django REST Framework code follows
 # This will change later, just useful example code to get started with
@@ -42,5 +43,6 @@ urlpatterns = [
     url(r'^steam/', include('steam.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^', include(router.urls)),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+	url(r'^steamView$', TemplateView.as_view(template_name='steamView.html'), name='home')
 ]
