@@ -38,12 +38,7 @@ def exportData(curatorFile = "curators.txt", recFile = "recommendations.txt", ap
 
 def pull(download = False):
     # Pull updates, as appropriate, for data entries that are new / stale.
-    return _updateRecords(steam_api.getCurators()) if download else updateRecords()
-
-# TODO:
-def updateRecords():
-	# Method used in 'pull' above but, was never defined.
-	return 0
+    return _updateRecords(steam_api.getCurators()) if download else _updateRecords()
 
 def main():
     parser = argparse.ArgumentParser(description='Pull updated information from web sources as needed.')
