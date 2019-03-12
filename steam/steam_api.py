@@ -26,12 +26,14 @@ API_ROOT = "https://api.steampowered.com"
 STORE_API_ROOT = "https://store.steampowered.com"
 
 CURATORS_PATH = "/curators/ajaxgetcurators/render/"
+
 CURATORS_RECOMMENDATIONS_PATH = "/curators/ajaxgetcuratorrecommendations/%(id)i/"
 APP_LIST_PATH = "/ISteamApps/GetAppList/v2"
 APP_DETAILS_PATH = "/api/appdetails/"
 
 APP_ID = "app_id"
-CURATOR_ID = "curator_id"
+CURATOR_ID = "clanID"
+#CURATOR_ID = "curator_id"
 
 MAX_PER_PAGE = 50
 RETRY_ATTEMPTS = 10
@@ -60,31 +62,37 @@ def getCurators():
         curators.update(newData)
         curatorIndex += len(newData)
 
-    curators = [{data.items() + (CURATOR_ID, key)} for key, data in curators.iteritems()]
+    #curators = [{data.items() + (CURATOR_ID, key)} for key, data in curators.iteritems()]
+
     return curators
 
 
 def getRecommendationsSet(curators):
     recommendations = []
-
-    for curatorIndex, curator in enumerate(curators):
-        curatorId = curator[CURATOR_ID]
-        curatorInfo = str(curatorIndex + 1) + "/" + str(len(curators)) + "] " + curator["name"]
-        recommendations.extend(getRecommendations(int(curatorId), curatorInfo))
+	
+    for curatorIndex, curator in curators.items():
+        curatorId = curatorIndex
+        recommendations.extend(getRecommendations(curatorId, curator['pageNum'], curator['name']))
+		
+#    for curatorIndex, curator in enumerate(curators):
+#        curatorId = curator[CURATOR_ID]
+#        curatorInfo = str(curatorIndex + 1) + "/" + str(len(curators)) + "] " + curator["name"]
+#        recommendations.extend(getRecommendations(int(curatorId), curatorInfo))
 
     return recommendations
 
 
-def getRecommendations(curatorId, curatorLabel=None):
+def getRecommendations(curatorId, pageNumber, curatorLabel=None):
     curatorLabel = "[" + str(curatorLabel) if curatorLabel else str(curatorId) + "]"
     recIndex = 0
     totalCount = None
     recommendations = []
 
-    while totalCount == None or recIndex < totalCount:
+    while totalCount == None:
         retryAttempts = 0
         print(curatorLabel, "- From #" + str(recIndex), "- ", end="")
-        newRecs, totalCount = _getRecommendations(curatorId, recIndex, MAX_PER_PAGE)
+        newRecs, totalCount = _getRecommendations(curatorId, pageNumber, MAX_PER_PAGE)
+#        newRecs, totalCount = _getRecommendations(curatorId, recIndex, MAX_PER_PAGE)
 
         while newRecs == None:
             if retryAttempts > RETRY_ATTEMPTS:
@@ -177,26 +185,85 @@ def _getCurators(start=0, count=MAX_PER_PAGE):
         return None
 
     soup = bs4.BeautifulSoup(data["results_html"], "html.parser")
-    curators = soup.select(".steam_curator_row_ctn")
+
+	#increment 'start' to get the next group of curators
+	#https://store.steampowered.com/curators/ajaxgetcurators/render?start=0&count=50
+
+	# g_rgTopCurators = [{},{},{}] 			PRIMARY ARRAY THAT STORES CURATORS
+	# m_rgAppRecommendations = [{},{},{}] 	APPS ARRAY PER CURATOR
+
+    curators = []
+
+    text = soup.find_all('script')[1].text
+    curators = json.loads(text[text.index("var g_rgTopCurators = ") + len("var g_rgTopCurators = ") : text.index("var fnCreateCapsule")].strip().rstrip(';'))
+
+    for x in curators:
+        print(x['name'])
+        print(x['clanID'])
+
     for curator in curators:
-        curatorId = int(curator.a["data-clanid"])
-        href = curator.a["href"].strip()
-        desc = curator.select(".steam_curator_desc")
-        if not href:
-            # bad data
-            continue
+        curatorId = curator['clanID']
+        desc = curator['curator_description']
         ret[curatorId] = {
-            "page": href,
-            "followers": int(curator.select(".num_followers")[0].text.replace(",", "")),
-            "name": curator.select(".steam_curator_name")[0].text,
-            "desc": desc and desc[0].text.strip(),
-            "avatar": curator.select("img.steam_curator_avatar")[0]["src"],
+            "page": curator['link'],
+            "followers": curator['total_followers'],
+            "name": curator['name'],
+            "desc": desc,
+            "avatar": curator['strAvatarHash'],
+            "pageNum": start,
         }
     return ret, data["total_count"]
 
+def _getRecommendations(curatorId, start, count=MAX_PER_PAGE):
+    ret = {}
+    params = {
+        "start": start,
+        "count": count,
+    }
+    path = STORE_API_ROOT + CURATORS_PATH
+    try:
+        response = requests.get(path, params=params).json()
+    except ValueError as e:
+        return None
 
+    if not response or not "results_html" in response:
+        return None, None
+    if "total_count" in response:
+        totalCount = response["total_count"]
+    else:
+        totalCount = None
+		
+    soup = bs4.BeautifulSoup(response["results_html"], "html.parser")
+
+    #Example of current API Endpoint of Recommendations
+    #https://store.steampowered.com/curator/8788493/ajaxgetcuratorrecommendations/
+
+    path = STORE_API_ROOT + '/curator/' + int(curatorId) + '/ajaxgetcuratorrecommendations/'
+	
+    found = False
+    recommendations = []
+
+    text = soup.find_all('script')[1].text
+    curators = json.loads(text[text.index("var g_rgTopCurators = ") + len("var g_rgTopCurators = ") : text.index("var fnCreateCapsule")].strip().rstrip(';'))
+
+    for x in range(50):
+        if not found:
+            if int(curatorId) == int(curators[x]["clanID"]):
+                print("FOUND !!!")
+                found = True
+                recommendations.extend(curators[x]["m_rgAppRecommendations"])
+
+    return recommendations, totalCount
+
+# TESTING
+bob = getCurators()
+print(bob)
+jim = {'8788493': {'page': 'https://store.steampowered.com/curator/8788493-Crimeshot-Entertainment/', 'followers': 0, 'name': 'Crimeshot Entertainment', 'desc': 'Here can u see the games i recommend!', 'avatar': '456d68634fe56ac2b918ca9bc88028805548c9fe', 'pageNum': 23650}}
+#print(getRecommendationsSet(jim))
+
+"""
 def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
-    path = STORE_API_ROOT + CURATORS_RECOMMENDATIONS_PATH % {"id": curatorId}
+    path = STORE_API_ROOT + CURATORS_RECOMMENDATIONS_PATH % {"id": int(curatorId)}
     try:
         response = requests.get(path, params={ "start": start, "count": count }).json()
     except ValueError as e:
@@ -244,3 +311,4 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
 
     return recommendations, totalCount
 
+"""
