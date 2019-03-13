@@ -21,11 +21,18 @@
 			</div>
 			<div>
 				<h2><!–– Suggested Curator List (Secondary component)--><!---->
-					STEAM <b>CURATORS</b>
+					SUGGESTED <b>CURATORS</b>
 				</h2>
 			</div>
 		</div>
-		<p> HAHA </p>
+
+		<div style="display: flex; justify-content: space-evenly">
+			<div class="curator_page" style="display:inline-block; width: 45%;">
+			</div>
+			<div class="curator_page" style="display:inline-block; width: 45%;">
+			</div>
+		</div>
+		
 		<ul>
 			{% for app_id in Application %}
 				<li class="app">{{ app_id }}</li>
