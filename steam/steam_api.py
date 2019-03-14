@@ -26,8 +26,8 @@ API_ROOT = "https://api.steampowered.com"
 STORE_API_ROOT = "https://store.steampowered.com"
 
 CURATORS_PATH = "/curators/ajaxgetcurators/render/"
-
-CURATORS_RECOMMENDATIONS_PATH = "/curators/ajaxgetcuratorrecommendations/%(id)i/"
+CURATORS_RECOMMENDATIONS_PATH = "/curator/%(id)i/ajaxgetcuratorrecommendations/"
+#CURATORS_RECOMMENDATIONS_PATH = "/curators/ajaxgetcuratorrecommendations/%(id)i/"
 APP_LIST_PATH = "/ISteamApps/GetAppList/v2"
 APP_DETAILS_PATH = "/api/appdetails/"
 
@@ -238,8 +238,8 @@ def _getRecommendations(curatorId, start, count=MAX_PER_PAGE):
     #Example of current API Endpoint of Recommendations
     #https://store.steampowered.com/curator/8788493/ajaxgetcuratorrecommendations/
 
-    path = STORE_API_ROOT + '/curator/' + int(curatorId) + '/ajaxgetcuratorrecommendations/'
-	
+    path = STORE_API_ROOT + CURATORS_RECOMMENDATIONS_PATH % {"id": int(curatorId)}
+    print(path)
     found = False
     recommendations = []
 
@@ -257,9 +257,9 @@ def _getRecommendations(curatorId, start, count=MAX_PER_PAGE):
 
 # TESTING
 bob = getCurators()
-print(bob)
+#print(bob)
 jim = {'8788493': {'page': 'https://store.steampowered.com/curator/8788493-Crimeshot-Entertainment/', 'followers': 0, 'name': 'Crimeshot Entertainment', 'desc': 'Here can u see the games i recommend!', 'avatar': '456d68634fe56ac2b918ca9bc88028805548c9fe', 'pageNum': 23650}}
-#print(getRecommendationsSet(jim))
+print(getRecommendationsSet(jim))
 
 """
 def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
