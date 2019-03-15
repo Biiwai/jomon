@@ -18,6 +18,7 @@ import bs4
 import requests
 import requests_cache
 import json
+#import libxml2
 
 # Cache all requests
 requests_cache.install_cache()
@@ -27,7 +28,7 @@ STORE_API_ROOT = "https://store.steampowered.com"
 
 CURATORS_PATH = "/curators/ajaxgetcurators/render/"
 CURATORS_RECOMMENDATIONS_PATH = "/curator/%(id)i/ajaxgetcuratorrecommendations/"
-#CURATORS_RECOMMENDATIONS_PATH = "/curators/ajaxgetcuratorrecommendations/%(id)i/"
+
 APP_LIST_PATH = "/ISteamApps/GetAppList/v2"
 APP_DETAILS_PATH = "/api/appdetails/"
 
@@ -72,7 +73,7 @@ def getRecommendationsSet(curators):
 	
     for curatorIndex, curator in curators.items():
         curatorId = curatorIndex
-        recommendations.extend(getRecommendations(curatorId, curator['pageNum'], curator['name']))
+        recommendations.extend(getRecommendations(curatorId, curator['name']))
 		
 #    for curatorIndex, curator in enumerate(curators):
 #        curatorId = curator[CURATOR_ID]
@@ -210,17 +211,18 @@ def _getCurators(start=0, count=MAX_PER_PAGE):
             "name": curator['name'],
             "desc": desc,
             "avatar": curator['strAvatarHash'],
-            "pageNum": start,
         }
     return ret, data["total_count"]
 
-def _getRecommendations(curatorId, start, count=MAX_PER_PAGE):
+def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
     ret = {}
     params = {
         "start": start,
         "count": count,
     }
-    path = STORE_API_ROOT + CURATORS_PATH
+    path = STORE_API_ROOT + CURATORS_RECOMMENDATIONS_PATH % {"id": int(curatorId)}
+    print(path)
+
     try:
         response = requests.get(path, params=params).json()
     except ValueError as e:
@@ -232,33 +234,40 @@ def _getRecommendations(curatorId, start, count=MAX_PER_PAGE):
         totalCount = response["total_count"]
     else:
         totalCount = None
-		
+
     soup = bs4.BeautifulSoup(response["results_html"], "html.parser")
 
     #Example of current API Endpoint of Recommendations
-    #https://store.steampowered.com/curator/8788493/ajaxgetcuratorrecommendations/
+    #https://store.steampowered.com/curator/1850/ajaxgetcuratorrecommendations/render?start=0&count=50
 
-    path = STORE_API_ROOT + CURATORS_RECOMMENDATIONS_PATH % {"id": int(curatorId)}
-    print(path)
     found = False
     recommendations = []
 
-    text = soup.find_all('script')[1].text
-    curators = json.loads(text[text.index("var g_rgTopCurators = ") + len("var g_rgTopCurators = ") : text.index("var fnCreateCapsule")].strip().rstrip(';'))
+    reviewed_apps = soup.findAll("div", ["recommendation"])
 
-    for x in range(50):
-        if not found:
-            if int(curatorId) == int(curators[x]["clanID"]):
-                print("FOUND !!!")
-                found = True
-                recommendations.extend(curators[x]["m_rgAppRecommendations"])
+    for rec in reviewed_apps:
+#        print(rec.find("span")['class'][0])
+#        print()
+
+        if rec.find("span")['class'][0] == "color_recommended":
+            try:
+                recommendations.append({
+                    "appid" : rec['data-ds-appid'],
+#                    "desc": rec["recommendation_desc"],
+                    "app_src": rec.find("a")['href'],
+                    "current_price": rec.find("div",["discount_block", "discount_block_inline no_discount"])['data-price-final'],
+                    "image_src": rec.find("img")['src']
+                })
+            except ValueError:
+                print("Couldn't process entry:", rec)
 
     return recommendations, totalCount
 
 # TESTING
 bob = getCurators()
 #print(bob)
-jim = {'8788493': {'page': 'https://store.steampowered.com/curator/8788493-Crimeshot-Entertainment/', 'followers': 0, 'name': 'Crimeshot Entertainment', 'desc': 'Here can u see the games i recommend!', 'avatar': '456d68634fe56ac2b918ca9bc88028805548c9fe', 'pageNum': 23650}}
+print(bob['26436129'])
+jim = {'26436129': {'page': 'https://store.steampowered.com/curator/26436129-RealGoodGames/', 'followers': 33, 'name': 'RealGoodGames', 'desc': 'Sometimes you just need a bit of clarity and sincerity in your reviews...\nYou might find that here.', 'avatar': 'd7cacb3ebb6e97c5ede36cbfbc6e58a313e51eee'}}
 print(getRecommendationsSet(jim))
 
 """
