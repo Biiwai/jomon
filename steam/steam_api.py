@@ -83,7 +83,7 @@ def getRecommendationsSet(curators):
     return recommendations
 
 
-def getRecommendations(curatorId, pageNumber, curatorLabel=None):
+def getRecommendations(curatorId, curatorLabel=None):
     curatorLabel = "[" + str(curatorLabel) if curatorLabel else str(curatorId) + "]"
     recIndex = 0
     totalCount = None
@@ -92,8 +92,7 @@ def getRecommendations(curatorId, pageNumber, curatorLabel=None):
     while totalCount == None:
         retryAttempts = 0
         print(curatorLabel, "- From #" + str(recIndex), "- ", end="")
-        newRecs, totalCount = _getRecommendations(curatorId, pageNumber, MAX_PER_PAGE)
-#        newRecs, totalCount = _getRecommendations(curatorId, recIndex, MAX_PER_PAGE)
+        newRecs, totalCount = _getRecommendations(curatorId, recIndex, MAX_PER_PAGE)
 
         while newRecs == None:
             if retryAttempts > RETRY_ATTEMPTS:
@@ -222,6 +221,7 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
     }
     path = STORE_API_ROOT + CURATORS_RECOMMENDATIONS_PATH % {"id": int(curatorId)}
     print(path)
+    print()
 
     try:
         response = requests.get(path, params=params).json()
@@ -246,16 +246,27 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
     reviewed_apps = soup.findAll("div", ["recommendation"])
 
     for rec in reviewed_apps:
-#        print(rec.find("span")['class'][0])
-#        print()
+        temp_discount = rec.find("div",["discount_pct"])
+        current_price = rec.find("div",["discount_block", "discount_block_inline no_discount"])['data-price-final']
+
+        if temp_discount != None:
+            discount = True
+            discount_percent = temp_discount.text
+            original_price = rec.find("div",["discount_original_price"]).text
+        else:
+            discount = False
+            discount_percent = None
+            original_price = current_price
 
         if rec.find("span")['class'][0] == "color_recommended":
             try:
                 recommendations.append({
                     "appid" : rec['data-ds-appid'],
-#                    "desc": rec["recommendation_desc"],
-                    "app_src": rec.find("a")['href'],
-                    "current_price": rec.find("div",["discount_block", "discount_block_inline no_discount"])['data-price-final'],
+                    "app_src": rec.find("a")['href'].split("?snr=")[0],
+					"discounted": discount,
+                    "discount_percent": discount_percent,
+                    "original_price": original_price,
+                    "current_price": current_price,
                     "image_src": rec.find("img")['src']
                 })
             except ValueError:
@@ -267,8 +278,10 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
 bob = getCurators()
 #print(bob)
 print(bob['26436129'])
-jim = {'26436129': {'page': 'https://store.steampowered.com/curator/26436129-RealGoodGames/', 'followers': 33, 'name': 'RealGoodGames', 'desc': 'Sometimes you just need a bit of clarity and sincerity in your reviews...\nYou might find that here.', 'avatar': 'd7cacb3ebb6e97c5ede36cbfbc6e58a313e51eee'}}
-print(getRecommendationsSet(jim))
+print(bob['8788493'])
+bill = {'8788493': {'page': 'https://store.steampowered.com/curator/8788493-Crimeshot-Entertainment/', 'followers': 0, 'name': 'Crimeshot Entertainment', 'desc': 'Here can u see the games i recommend!', 'avatar': '456d68634fe56ac2b918ca9bc88028805548c9fe'}}
+#jim = {'26436129': {'page': 'https://store.steampowered.com/curator/26436129-RealGoodGames/', 'followers': 33, 'name': 'RealGoodGames', 'desc': 'Sometimes you just need a bit of clarity and sincerity in your reviews...\nYou might find that here.', 'avatar': 'd7cacb3ebb6e97c5ede36cbfbc6e58a313e51eee'}}
+print(getRecommendationsSet(bill))
 
 """
 def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
