@@ -276,17 +276,20 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
 
     return recommendations, totalCount
 
-def getOrderedRecommendations(currentRecSet, newRecSet):
-    sorted_list = []
-    ordered_dict = currentRecSet
+def updateRecommendationCount(currentRecSet, newRecSet):
+    unordered_dict = currentRecSet
 
     for key,value in newRecSet.items():
-        if key not in ordered_dict:
-            ordered_dict[key] = value
+        if key not in unordered_dict:
+            unordered_dict[key] = value
         else:
-            ordered_dict[key]['recommendation_count']+=1
+            unordered_dict[key]['recommendation_count']+=1
 
-    temp_list = list(ordered_dict.values())
+    return unordered_dict
+
+def sortRecommendations(unsorted_dict):
+    sorted_list = []
+    temp_list = list(unsorted_dict.values())
     sorted_list = sorted(temp_list, key=lambda x: x['recommendation_count'],reverse=True)
     return sorted_list
 
@@ -297,12 +300,18 @@ bob = getCurators()
 #print(bob['8788493'])
 bill = {'8788493': {'page': 'https://store.steampowered.com/curator/8788493-Crimeshot-Entertainment/', 'followers': 0, 'name': 'Crimeshot Entertainment', 'desc': 'Here can u see the games i recommend!', 'avatar': '456d68634fe56ac2b918ca9bc88028805548c9fe'}}
 jim = {'26436129': {'page': 'https://store.steampowered.com/curator/26436129-RealGoodGames/', 'followers': 33, 'name': 'RealGoodGames', 'desc': 'Sometimes you just need a bit of clarity and sincerity in your reviews...\nYou might find that here.', 'avatar': 'd7cacb3ebb6e97c5ede36cbfbc6e58a313e51eee'}}
-print(type(bill))
+#print(type(bill))
 #print(type(jim))
 recbill = getRecommendationsSet(bill)
 recjim = getRecommendationsSet(jim)
-merged = getOrderedRecommendations(recjim,recbill)
+merged = updateRecommendationCount(recjim,recbill)
+sort = sortRecommendations(merged)
 print(merged)
+print()
+print(sort)
+print()
+temp = updateRecommendationCount(merged,recbill)
+print(sortRecommendations(temp))
 #print(type(merged))
 #print("HELLO WORLD !!!")
 #print(getAppDetails(883710)['short_description'])
