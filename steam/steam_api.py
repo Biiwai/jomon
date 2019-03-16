@@ -18,7 +18,6 @@ import bs4
 import requests
 import requests_cache
 import json
-#import libxml2
 
 # Cache all requests
 requests_cache.install_cache()
@@ -34,7 +33,6 @@ APP_DETAILS_PATH = "/api/appdetails/"
 
 APP_ID = "app_id"
 CURATOR_ID = "clanID"
-#CURATOR_ID = "curator_id"
 
 MAX_PER_PAGE = 50
 RETRY_ATTEMPTS = 10
@@ -69,11 +67,11 @@ def getCurators():
 
 
 def getRecommendationsSet(curators):
-    recommendations = []
+    recommendations = {}
 	
     for curatorIndex, curator in curators.items():
         curatorId = curatorIndex
-        recommendations.extend(getRecommendations(curatorId, curator['name']))
+        recommendations = (getRecommendations(curatorId, curator['name']))
 		
 #    for curatorIndex, curator in enumerate(curators):
 #        curatorId = curator[CURATOR_ID]
@@ -87,7 +85,7 @@ def getRecommendations(curatorId, curatorLabel=None):
     curatorLabel = "[" + str(curatorLabel) if curatorLabel else str(curatorId) + "]"
     recIndex = 0
     totalCount = None
-    recommendations = []
+    recommendations = {}
 
     while totalCount == None:
         retryAttempts = 0
@@ -106,7 +104,7 @@ def getRecommendations(curatorId, curatorLabel=None):
             retryAttempts += 1
 
         print("Grabbed", len(newRecs), "recommendations.")
-        recommendations.extend(newRecs)
+        recommendations = newRecs
         recIndex += len(newRecs)
 
     return recommendations
@@ -240,8 +238,7 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
     #https://store.steampowered.com/curator/1850/ajaxgetcuratorrecommendations/render?start=0&count=50
 
     found = False
-    recommendations = []
-
+    recommendations = {}
     reviewed_apps = soup.findAll("div", ["recommendation"])
 
     for rec in reviewed_apps:
@@ -262,8 +259,8 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
 
         if rec.find("span")['class'][0] == "color_recommended":
             try:
-                recommendations.append({
-                    "appid" : appid,
+                recommendations[appid] = {
+                    "appid": appid,
                     "name": app_details['name'],
                     "desc": app_details['short_description'],
                     "app_src": rec.find("a")['href'].split("?snr=")[0],
@@ -271,21 +268,42 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
                     "discount_percent": discount_percent,
                     "original_price": original_price,
                     "current_price": current_price,
-                    "image_src": rec.find("img")['src']
-                })
+                    "image_src": rec.find("img")['src'],
+                    "recommendation_count": int(1),
+                }
             except ValueError:
                 print("Couldn't process entry:", rec)
 
     return recommendations, totalCount
 
+def getOrderedRecommendations(currentRecSet, newRecSet):
+    sorted_list = []
+    ordered_dict = currentRecSet
+
+    for key,value in newRecSet.items():
+        if key not in ordered_dict:
+            ordered_dict[key] = value
+        else:
+            ordered_dict[key]['recommendation_count']+=1
+
+    temp_list = list(ordered_dict.values())
+    sorted_list = sorted(temp_list, key=lambda x: x['recommendation_count'],reverse=True)
+    return sorted_list
+
 # TESTING
-#bob = getCurators()
+bob = getCurators()
 #print(bob)
 #print(bob['26436129'])
 #print(bob['8788493'])
-#bill = {'8788493': {'page': 'https://store.steampowered.com/curator/8788493-Crimeshot-Entertainment/', 'followers': 0, 'name': 'Crimeshot Entertainment', 'desc': 'Here can u see the games i recommend!', 'avatar': '456d68634fe56ac2b918ca9bc88028805548c9fe'}}
-#jim = {'26436129': {'page': 'https://store.steampowered.com/curator/26436129-RealGoodGames/', 'followers': 33, 'name': 'RealGoodGames', 'desc': 'Sometimes you just need a bit of clarity and sincerity in your reviews...\nYou might find that here.', 'avatar': 'd7cacb3ebb6e97c5ede36cbfbc6e58a313e51eee'}}
-#print(getRecommendationsSet(bill))
+bill = {'8788493': {'page': 'https://store.steampowered.com/curator/8788493-Crimeshot-Entertainment/', 'followers': 0, 'name': 'Crimeshot Entertainment', 'desc': 'Here can u see the games i recommend!', 'avatar': '456d68634fe56ac2b918ca9bc88028805548c9fe'}}
+jim = {'26436129': {'page': 'https://store.steampowered.com/curator/26436129-RealGoodGames/', 'followers': 33, 'name': 'RealGoodGames', 'desc': 'Sometimes you just need a bit of clarity and sincerity in your reviews...\nYou might find that here.', 'avatar': 'd7cacb3ebb6e97c5ede36cbfbc6e58a313e51eee'}}
+print(type(bill))
+#print(type(jim))
+recbill = getRecommendationsSet(bill)
+recjim = getRecommendationsSet(jim)
+merged = getOrderedRecommendations(recjim,recbill)
+print(merged)
+#print(type(merged))
 #print("HELLO WORLD !!!")
 #print(getAppDetails(883710)['short_description'])
 
