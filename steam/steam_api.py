@@ -243,16 +243,14 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
     recommendations = []
 
     reviewed_apps = soup.findAll("div", ["recommendation"])
-    app_list = _getAppList()
 
     for rec in reviewed_apps:
         appid = rec['data-ds-appid']
-        print(appid)
-        print(app_list[int(appid)])
-
         temp_discount = rec.find("div",["discount_pct"])
         current_price = rec.find("div",["discount_block", "discount_block_inline no_discount"])['data-price-final']
 
+        app_details = getAppDetails(int(appid))
+		
         if temp_discount != None:
             discount = True
             discount_percent = temp_discount.text
@@ -266,7 +264,8 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
             try:
                 recommendations.append({
                     "appid" : appid,
-                    "name": app_list[int(appid)]['name'],
+                    "name": app_details['name'],
+                    "desc": app_details['short_description'],
                     "app_src": rec.find("a")['href'].split("?snr=")[0],
 					"discounted": discount,
                     "discount_percent": discount_percent,
@@ -279,36 +278,16 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
 
     return recommendations, totalCount
 
-def _getAppList():
-    ret = {}
-    path = API_ROOT + APP_LIST_PATH
-
-    #Example of current API Endpoint of App List
-    #https://api.steampowered.com/ISteamApps/GetAppList/v2
-
-    try:
-        response = requests.get(path).json()
-    except ValueError as e:
-        response = None
-
-    app_list = response["applist"]["apps"]
-    
-    for app in app_list:
-        ret[app['appid']] = {
-            "name": app['name']
-        }
-
-    return ret
-
 # TESTING
-bob = getCurators()
+#bob = getCurators()
 #print(bob)
 #print(bob['26436129'])
 #print(bob['8788493'])
-bill = {'8788493': {'page': 'https://store.steampowered.com/curator/8788493-Crimeshot-Entertainment/', 'followers': 0, 'name': 'Crimeshot Entertainment', 'desc': 'Here can u see the games i recommend!', 'avatar': '456d68634fe56ac2b918ca9bc88028805548c9fe'}}
+#bill = {'8788493': {'page': 'https://store.steampowered.com/curator/8788493-Crimeshot-Entertainment/', 'followers': 0, 'name': 'Crimeshot Entertainment', 'desc': 'Here can u see the games i recommend!', 'avatar': '456d68634fe56ac2b918ca9bc88028805548c9fe'}}
 #jim = {'26436129': {'page': 'https://store.steampowered.com/curator/26436129-RealGoodGames/', 'followers': 33, 'name': 'RealGoodGames', 'desc': 'Sometimes you just need a bit of clarity and sincerity in your reviews...\nYou might find that here.', 'avatar': 'd7cacb3ebb6e97c5ede36cbfbc6e58a313e51eee'}}
-print(getRecommendationsSet(bill))
-#print(_getAppList()[255710])
+#print(getRecommendationsSet(bill))
+#print("HELLO WORLD !!!")
+#print(getAppDetails(883710)['short_description'])
 
 """
 def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
