@@ -294,24 +294,24 @@ def sortRecommendations(unsorted_dict):
     return sorted_list
 
 # TESTING
-bob = getCurators()
+#bob = getCurators()
 #print(bob)
 #print(bob['26436129'])
 #print(bob['8788493'])
-bill = {'8788493': {'page': 'https://store.steampowered.com/curator/8788493-Crimeshot-Entertainment/', 'followers': 0, 'name': 'Crimeshot Entertainment', 'desc': 'Here can u see the games i recommend!', 'avatar': '456d68634fe56ac2b918ca9bc88028805548c9fe'}}
-jim = {'26436129': {'page': 'https://store.steampowered.com/curator/26436129-RealGoodGames/', 'followers': 33, 'name': 'RealGoodGames', 'desc': 'Sometimes you just need a bit of clarity and sincerity in your reviews...\nYou might find that here.', 'avatar': 'd7cacb3ebb6e97c5ede36cbfbc6e58a313e51eee'}}
+#bill = {'8788493': {'page': 'https://store.steampowered.com/curator/8788493-Crimeshot-Entertainment/', 'followers': 0, 'name': 'Crimeshot Entertainment', 'desc': 'Here can u see the games i recommend!', 'avatar': '456d68634fe56ac2b918ca9bc88028805548c9fe'}}
+#jim = {'26436129': {'page': 'https://store.steampowered.com/curator/26436129-RealGoodGames/', 'followers': 33, 'name': 'RealGoodGames', 'desc': 'Sometimes you just need a bit of clarity and sincerity in your reviews...\nYou might find that here.', 'avatar': 'd7cacb3ebb6e97c5ede36cbfbc6e58a313e51eee'}}
 #print(type(bill))
 #print(type(jim))
-recbill = getRecommendationsSet(bill)
-recjim = getRecommendationsSet(jim)
-merged = updateRecommendationCount(recjim,recbill)
-sort = sortRecommendations(merged)
-print(merged)
-print()
-print(sort)
-print()
-temp = updateRecommendationCount(merged,recbill)
-print(sortRecommendations(temp))
+#recbill = getRecommendationsSet(bill)
+#recjim = getRecommendationsSet(jim)
+#merged = updateRecommendationCount(recjim,recbill)
+#sort = sortRecommendations(merged)
+#print(merged)
+#print()
+#print(sort)
+#print()
+#temp = updateRecommendationCount(merged,recbill)
+#print(sortRecommendations(temp))
 #print(type(merged))
 #print("HELLO WORLD !!!")
 #print(getAppDetails(883710)['short_description'])

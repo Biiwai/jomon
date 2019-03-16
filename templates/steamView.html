@@ -11,6 +11,8 @@
 		<link href="https://steamstore-a.akamaihd.net/public/css/v6/curators_common.css?v=xdMzRLyF8Fl8" rel="stylesheet" type="text/css">
 		<link href="https://steamstore-a.akamaihd.net/public/css/v6/curators_home.css?v=dcy7gEll6Yft" rel="stylesheet" type="text/css">
 		<link href="https://steamstore-a.akamaihd.net/public/shared/css/shared_responsive.css?v=lZjXzgjiAjP-" rel="stylesheet" type="text/css">
+		<link href="https://steamstore-a.akamaihd.net/public/css/v6/browse.css?v=VXffWm1t3BeM" rel="stylesheet" type="text/css">
+
 	</head>
 	<body class="v6 responsive_page">
 		<div style="display: flex; justify-content: space-evenly; margin: 50px">
@@ -169,11 +171,17 @@
 				</div>
 			</div>
 		</div>
-		
-		<ul>
-			{% for app_id in Application %}
-				<li class="app">{{ app_id }}</li>
-			{% endfor %}
-		</ul>
+		<div id="NewReleases_ctn" class="paged_items_paging" style="width: 55%">
+			<div class="paged_items_paging_controls" id="NewReleases_controls">
+				<span id="NewReleases_btn_prev" class="pagebtn disabled">&lt;</span>
+				<span id="NewReleases_links"><span class="paged_items_paging_pagelink active">1 </span><span class="paged_items_paging_pagelink">2 </span><span class="paged_items_paging_pagelink">3 </span><span class="paged_items_paging_pagelink">4 </span><span class="paged_items_paging_pagelink">5 </span><span class="paged_items_paging_pagelink">6 </span> ... <span class="paged_items_paging_pagelink">48 </span></span>
+				<span id="NewReleases_btn_next" class="pagebtn">&gt;</span>
+			</div>
+
+			<div class="paged_items_paging_summary ellipsis">
+				Showing <span id="NewReleases_start">1</span>-<span id="NewReleases_end">15</span> of <span id="NewReleases_total">713</span> results			</div>
+
+			<div style="clear: both;"></div>
+		</div>
 	</body>
 </html>
