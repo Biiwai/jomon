@@ -194,10 +194,6 @@ def _getCurators(start=0, count=MAX_PER_PAGE):
     text = soup.find_all('script')[1].text
     curators = json.loads(text[text.index("var g_rgTopCurators = ") + len("var g_rgTopCurators = ") : text.index("var fnCreateCapsule")].strip().rstrip(';'))
 
-    for x in curators:
-        print(x['name'])
-        print(x['clanID'])
-
     for curator in curators:
         curatorId = curator['clanID']
         desc = curator['curator_description']
