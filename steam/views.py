@@ -12,6 +12,17 @@ def index(request):
 @ajax
 def mymethod(request):
 	print("Hello process")
+	
+	#	get curator from 'curators' dict
+	#	set 'current_curatorId' and add id to 'followed_curator_ids'
+	#	temp_recommendations = update.steam_api.getRecommendationsSet(curators[current_curatorId]) #may need to get .str() for current_curatorId
+	
+	"""if len(followed_curator_ids) > 0:
+		recommendations = update.steam_api.updateRecommendationCount(recommendations, temp_recommendations)
+		sorted_recommendations = update.steam_api.sortRecommendations(recommendations)
+	else:
+	 recommendations = temp_recommendations"""
+	 
 	return {"message": "hello PLUTO!"}
 
 def steamView(request):
@@ -33,23 +44,6 @@ def steamView(request):
 	five_random_curators.append(curators[random.choice(list(curators.keys()))])
 	
 	current_curatorId = 0
-
-	#{% for item in list1 %}
-	#	{% if forloop.counter < 5 %}
-	#
-	#	{% endif %}
-	#{% endfor %}
-	
-	#if 'follow' button clicked:
-		#	get curator from 'curators' dict
-		#	set 'current_curatorId' and add id to 'followed_curator_ids'
-		#	temp_recommendations = update.steam_api.getRecommendationsSet(curators[current_curatorId]) #may need to get .str() for current_curatorId
-
-	"""if len(followed_curator_ids) > 0:
-		recommendations = update.steam_api.updateRecommendationCount(recommendations, temp_recommendations)
-		sorted_recommendations = update.steam_api.sortRecommendations(recommendations)
-	else:
-	 recommendations = temp_recommendations"""
 
 	mylist = [{'id': '346110', 'desc': 'jim is cool'}, {'id': '730', 'desc': 'bob is cooler'}]
 
