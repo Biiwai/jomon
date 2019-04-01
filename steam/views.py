@@ -4,10 +4,15 @@ from . import update
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template import loader
+from django_ajax.decorators import ajax
 
 def index(request):
 	return HttpResponse("Hello, world. You're at the Steam index.")
 
+@ajax
+def mymethod(request):
+	print("Hello process")
+	return {"message": "hello PLUTO!"}
 
 def steamView(request):
 	recommendations = {} # Our UNSORTED dict of recommendations
@@ -26,7 +31,7 @@ def steamView(request):
 	five_random_curators.append(curators[random.choice(list(curators.keys()))])
 	five_random_curators.append(curators[random.choice(list(curators.keys()))])
 	five_random_curators.append(curators[random.choice(list(curators.keys()))])
-
+	
 	current_curatorId = 0
 
 	#{% for item in list1 %}

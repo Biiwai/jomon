@@ -100,8 +100,8 @@
 							<div class="name"><span>{{item.name}}</span></div>
 							<div class="actions">
 								<div>
-									<a class=" follow_button btn_green_white_innerfade btn_medium " href="#"><span>Follow</span></a>
-									<a class=" following_button btn_green_white_innerfade btn_medium " href="#" style="display: none;"><span>Following</span></a>
+									<a id={{ item.id }} xml:id={{ forloop.counter }} class=" follow_button btn_green_white_innerfade btn_medium "><span>Follow</span></a>
+									<a class=" following_button btn_green_white_innerfade btn_medium " style="display: none;"><span>Following</span></a>
 								</div>
 								<div class="followers" style="margin-top: -4px">
 									<span>{{item.followers}}</span>
@@ -120,5 +120,27 @@
 				</div>
 			</div>
 		</div>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		<script type=text/javascript>
+		$(function() {
+			$('a').bind('click', function() {
+				console.log("hello ajax");
+				console.log(this.id);
+				$.ajax({
+					url:"{% url 'CuratorList:mymethod' %}",
+					type:"GET",
+					success: function (data) {
+						console.log("success")
+						console.log(data)
+					},
+					error: function(xhr, status, error) {
+						console.log("failure")
+						var err = eval("(" + xhr.responseText + ")");
+						alert(err.Message);
+					}
+				})
+			});
+		});
+		</script>
 	</body>
 </html>

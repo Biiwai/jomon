@@ -203,6 +203,7 @@ def _getCurators(start=0, count=MAX_PER_PAGE):
             "name": curator['name'],
             "desc": desc,
             "avatar": curator['strAvatarHash'],
+			"id": curator['clanID']
         }
     return ret, data["total_count"]
 
