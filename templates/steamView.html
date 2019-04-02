@@ -129,6 +129,9 @@
 				$.ajax({
 					url:"{% url 'CuratorList:mymethod' %}",
 					type:"GET",
+					data: {
+						id: this.id
+					},
 					success: function (data) {
 						console.log("success")
 						console.log(data)

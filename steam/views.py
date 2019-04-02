@@ -11,7 +11,12 @@ def index(request):
 
 @ajax
 def mymethod(request):
+	# NEED TO MOVE steamView() variables to front of views.py (outside func)
 	print("Hello process")
+	
+	id = request.get_full_path().split("id=")[1]
+	print(id)
+
 	
 	#	get curator from 'curators' dict
 	#	set 'current_curatorId' and add id to 'followed_curator_ids'
