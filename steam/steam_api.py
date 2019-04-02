@@ -68,11 +68,8 @@ def getCurators():
 
 def getRecommendationsSet(curators):
     recommendations = {}
-	
-    for curatorIndex, curator in curators.items():
-        curatorId = curatorIndex
-        recommendations = (getRecommendations(curatorId, curator['name']))
-		
+    recommendations = (getRecommendations(curators["id"], curators["name"]))
+
 #    for curatorIndex, curator in enumerate(curators):
 #        curatorId = curator[CURATOR_ID]
 #        curatorInfo = str(curatorIndex + 1) + "/" + str(len(curators)) + "] " + curator["name"]
@@ -232,7 +229,7 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
     soup = bs4.BeautifulSoup(response["results_html"], "html.parser")
 
     #Example of current API Endpoint of Recommendations
-    #https://store.steampowered.com/curator/1850/ajaxgetcuratorrecommendations/render?start=0&count=50
+    #https://store.steampowered.com/curator/6883279/ajaxgetcuratorrecommendations/render?start=0&count=50
 
     found = False
     recommendations = {}
@@ -240,8 +237,17 @@ def _getRecommendations(curatorId, start=0, count=MAX_PER_PAGE):
 
     for rec in reviewed_apps:
         appid = rec['data-ds-appid']
+        current_price = []
         temp_discount = rec.find("div",["discount_pct"])
-        current_price = rec.find("div",["discount_block", "discount_block_inline no_discount"])['data-price-final']
+
+        try:
+            current_price = rec.find("div",["discount_final_price"])
+            if current_price != None:
+                current_price = current_price.text
+            else:
+                current_price = None
+        except KeyError as k:
+           current_price = None
 
         app_details = getAppDetails(int(appid))
 		
