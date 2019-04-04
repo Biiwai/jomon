@@ -15,25 +15,25 @@ curators = {} # Our dict of all steam curators
 five_random_curators = [] # Our list of 5 random suggested curators to follow
 random_curators = [] # list of random curators
 
+loadcurators = True
+	
 def index(request):
 	return HttpResponse("Hello, world. You're at the Steam index.")
 
 @ajax
-def mymethod(request):
-	print("Getting curator info...")
-
+def followClick(request):
 	# Get curator id
 	id = request.get_full_path().split("id=")[1]
 
 	# Get curator from 'curators' dict
 	curator = curators[id];
-	print(curator)
+
 	# Add curator id to list if not already in list
 	if id not in followed_curator_ids:
 		
 		global recommendations
 		global sorted_recommendations
-		
+
 		followed_curator_ids.append(id);
 
 		temp_recommendations = update.steam_api.getRecommendationsSet((curator))
@@ -45,25 +45,27 @@ def mymethod(request):
 			recommendations = temp_recommendations
 		
 		print(sorted_recommendations)
-		
-	return {"message": "hello PLUTO!"}
+
+	return render(request,'../templates/steamView.html',{"rec_list": sorted_recommendations})
 
 def steamView(request):
 	# Get all steam curators
 	global curators
-	curators = update.steam_api.getCurators()
-
+	global loadcurators
+	if(loadcurators):
+		curators = update.steam_api.getCurators()
+		loadcurators=False
+	
+	# Reset random 5 curators on page load
+	if len(five_random_curators) > 0:
+		five_random_curators.clear()
+		
 	# Get 5 random curators and append to our list to be passed to 'Suggested Curators'
-
 	five_random_curators.append(curators[random.choice(list(curators.keys()))])
 	five_random_curators.append(curators[random.choice(list(curators.keys()))])
 	five_random_curators.append(curators[random.choice(list(curators.keys()))])
 	five_random_curators.append(curators[random.choice(list(curators.keys()))])
 	five_random_curators.append(curators[random.choice(list(curators.keys()))])
 
-	mylist = [{'id': '346110', 'desc': 'jim is cool'}, {'id': '730', 'desc': 'bob is cooler'}]
-
-	#return render(request,'../templates/steamView.html',{"list1": sorted_recommendations, "list2": five_random_curators})
-
-	return render(request,'../templates/steamView.html',{"list1": mylist, "list2": five_random_curators})
+	return render(request,'../templates/steamView.html',{"rec_list": sorted_recommendations, "list2": five_random_curators})
 

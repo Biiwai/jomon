@@ -5,5 +5,5 @@ from . import views
 urlpatterns = [
     url(r'^$', views.steamView, name='steamView'),
     url(r'^$', views.index, name='index'),
-	re_path(r'^Mymethod', views.mymethod,name='mymethod'),
+	url(r'^FollowCurator', views.followClick,name='followClick'),
 ]

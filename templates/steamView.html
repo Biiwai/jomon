@@ -15,6 +15,13 @@
 	</head>
 	<body class="v6 responsive_page">
 		<div style="display: flex; justify-content: space-evenly; margin: 50px">
+
+			<div>
+			{%for item in rec_list%}
+				<h2>{{item.name}}</h2>
+			{% endfor %}
+			</div>
+			
 			<div style="display:inline-block; width: 55%;">
 				<h2><!–– Suggested Games List (Primary component)--><!---->
 					STEAM CURATOR <b>GAMES</b>
@@ -127,17 +134,18 @@
 				console.log("hello ajax");
 				console.log(this.id);
 				$.ajax({
-					url:"{% url 'CuratorList:mymethod' %}",
+					url: "{% url 'CuratorList:followClick' %}",
 					type:"GET",
 					data: {
 						id: this.id
 					},
 					success: function (data) {
-						console.log("success")
-						console.log(data)
+						console.log("success");
+						console.log(data);
+						location.reload(true);
 					},
 					error: function(xhr, status, error) {
-						console.log("failure")
+						console.log("failure");
 						var err = eval("(" + xhr.responseText + ")");
 						alert(err.Message);
 					}
