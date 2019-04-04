@@ -15,32 +15,26 @@
 	</head>
 	<body class="v6 responsive_page">
 		<div style="display: flex; justify-content: space-evenly; margin: 50px">
-
-			<div>
-			{%for item in rec_list%}
-				<h2>{{item.name}}</h2>
-			{% endfor %}
-			</div>
-			
 			<div style="display:inline-block; width: 55%;">
 				<h2><!–– Suggested Games List (Primary component)--><!---->
 					STEAM CURATOR <b>GAMES</b>
 				</h2>
 				<div class="curator_page" style="padding: 12px 12px 15px 12px">
-				
+					{%for item in rec_list%}
 					<div class="recommendation" style="display:flex;">
-						<a href="https://store.steampowered.com/app/268910/Cuphead/" style="margin: 5px">
+						<a href={{item.app_src}} style="margin: 5px">
 							<div class="capsule headerv5">
-								<img src="https://steamcdn-a.akamaihd.net/steam/apps/268910/header_292x136.jpg?t=1550613648" style="max-width: 225px">
+								<img src={{item.image_src}} style="max-width: 225px">
 							</div>
 						</a>
 						<div style="position: relative">
 							<div class="recommendation_desc" style="margin: 5px">
-								Cuphead is a classic run and gun action game heavily focused on boss battles. Inspired by cartoons of the 1930s, the visuals and audio are painstakingly created with the same techniques of the era, i.e. traditional hand drawn cel animation, watercolor backgrounds, and original jazz recordings.
+								{{item.desc}}
 							</div>
-							<div class="discount_block discount_block_inline" style="position: absolute; bottom: 0; margin-bottom: 10px" data-price-final="1999"><div class="discount_prices"><div class="discount_final_price">$19.99</div></div></div>
+							<div class="discount_block discount_block_inline" style="position: absolute; bottom: 0; margin-bottom: 10px" data-price-final="1999"><div class="discount_prices"><div class="discount_final_price">{{item.current_price}}</div></div></div>
 						</div>
 					</div>
+					{% endfor %}
 					<div class="recommendation" style="display:flex;">
 						<a href="https://store.steampowered.com/app/10500/Total_War_EMPIRE__Definitive_Edition/" class="price_inline" style="margin: 5px">
 							<div class="capsule headerv5">
@@ -54,33 +48,6 @@
 							<div class="discount_block discount_block_inline" style="position: absolute; bottom: 0; margin-bottom: 10px" data-price-final="624"><div class="discount_pct">-75%</div><div class="discount_prices"><div class="discount_original_price">$24.99</div><div class="discount_final_price">$6.24</div></div></div>
 						</div>
 					</div>
-					<div class="recommendation" style="display:flex;">
-						<a href="https://store.steampowered.com/app/578650/The_Outer_Worlds/" style="margin: 5px">
-							<div class="capsule headerv5">
-								<img src="https://steamcdn-a.akamaihd.net/steam/apps/578650/header_292x136.jpg?t=1544797589" style="max-width: 225px">
-							</div>
-						</a>
-						<div style="position: relative">
-							<div class="recommendation_desc" style="margin: 5px">
-								The Outer Worlds is a new single-player sci-fi RPG from Obsidian Entertainment and Private Division. As you explore a space colony, the character you decide to become will determine how this player-driven story unfolds. In the corporate equation for the colony, you are the unplanned variable.
-							</div>
-							<div class="discount_block discount_block_inline" style="position: absolute; bottom: 0; margin-bottom: 10px" data-price-final="5999"><div class="discount_prices"><div class="discount_final_price">$59.99</div></div></div>
-						</div>
-					</div>
-					<div class="recommendation" style="display:flex;">
-						<a href="https://store.steampowered.com/app/883710/RESIDENT_EVIL_2__BIOHAZARD_RE2/" style="margin: 5px">
-							<div class="capsule headerv5">
-								<img src="https://steamcdn-a.akamaihd.net/steam/apps/883710/header_292x136.jpg?t=1550643188" style="max-width: 225px">
-							</div>
-						</a>
-						<div style="position: relative">
-							<div class="recommendation_desc" style="margin: 5px">
-								A deadly virus engulfs the residents of Raccoon City in September of 1998, plunging the city into chaos as flesh eating zombies roam the streets for survivors. An unparalleled adrenaline rush, gripping storyline, and unimaginable horrors await you. Witness the return of Resident Evil 2.
-							</div>
-							<div class="discount_block discount_block_inline" style="position: absolute; bottom: 0; margin-bottom: 10px" data-price-final="5999"><div class="discount_prices"><div class="discount_final_price">$59.99</div></div></div>
-						</div>
-					</div>
-					
 				</div>
 				<div id="NewReleases_ctn" class="paged_items_paging" style="">
 					<div class="paged_items_paging_controls" id="NewReleases_controls">
@@ -140,8 +107,6 @@
 						id: this.id
 					},
 					success: function (data) {
-						console.log("success");
-						console.log(data);
 						location.reload(true);
 					},
 					error: function(xhr, status, error) {
