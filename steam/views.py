@@ -46,7 +46,7 @@ def followClick(request):
 		
 		print(sorted_recommendations)
 
-	return render(request,'../templates/steamView.html',{"rec_list": sorted_recommendations})
+	return render(request,'steamView.html',{"rec_list": sorted_recommendations})
 
 def steamView(request):
 	# Get all steam curators
@@ -67,5 +67,5 @@ def steamView(request):
 	five_random_curators.append(curators[random.choice(list(curators.keys()))])
 	five_random_curators.append(curators[random.choice(list(curators.keys()))])
 
-	return render(request,'../templates/steamView.html',{"rec_list": sorted_recommendations, "list2": five_random_curators})
+	return render(request,'steamView.html',{"rec_list": sorted_recommendations, "list2": five_random_curators})
 
